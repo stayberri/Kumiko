@@ -1,6 +1,8 @@
 import discord
 import requests
 import datetime
+import random
+import asyncio
 import json
 from discord.ext import commands
 
@@ -24,6 +26,24 @@ class Fun():
         em.set_footer(text="Powered by 8ball.delegator.com")
         em.timestamp = datetime.datetime.now()
         await ctx.send(embed=em)
+
+    @commands.command()
+    async def bowling(self, ctx):
+        """Play a round of bowling!"""
+        init = random.choice(range(11))
+        if init == 10:
+            await ctx.send(":bowling: Strike! You got all of the pins!")
+        else:
+            await ctx.send(
+                ":bowling: You tried to get a strike, but you ended up getting **{}** pins instead. Let's try again.".format(
+                    init))
+            second = random.choice(range(10 - init))
+            if init + second == 10:
+                await ctx.send(":bowling: You got a spare! ({} then {})".format(init, second))
+            else:
+                await ctx.send(
+                    ":bowling: You didn't win, but you knocked down **{}** pins! ({} then {})".format(init + second,
+                                                                                                      init, second))
 
 
 def setup(bot):

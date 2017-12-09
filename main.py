@@ -11,6 +11,16 @@ startup_extensions = ["cogs.owner", "cogs.fun"]
 
 
 @bot.event
+async def on_ready():
+    global console
+    console = bot.get_channel(388807365400461332)
+    await send_log_event(console, "[Kumiko][Logger]\n"
+                         + "Starting up bot account:\n"
+                         + str(bot.user) + "\n"
+                         + f"Loaded up {len(bot.commands)} commands for {len(bot.guilds)} guilds.")
+
+
+@bot.event
 async def on_message(message):
     if not message.author.bot:
         await bot.process_commands(message)
@@ -21,18 +31,11 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(
             f":x: U-uh, sorry! You probably missed a required argument! Check `{ctx.prefix}help {ctx.command}`")
+    elif isinstance(error, commands.CheckFailure):
+        await ctx.send(":x: You do not have the permission required for this command.")
     else:
         await ctx.send(f":x: {str(error)}")
-
-
-@bot.event
-async def on_ready():
-    global console
-    console = bot.get_channel(388807365400461332)
-    await send_log_event(console, "[Kumiko][Logger]\n"
-                         + "Starting up bot account:\n"
-                         + str(bot.user) + "\n"
-                         + f"Loaded up {len(bot.commands)} commands for {len(bot.guilds)} guilds.")
+        await send_log_event(console, f"I ran into an error on command `{ctx.command}`:\n{str(error)}")
 
 
 if __name__ == "__main__":
