@@ -6,12 +6,7 @@ import textwrap
 import json
 from contextlib import redirect_stdout
 from discord.ext import commands
-
-ownerids = [267207628965281792]
-
-
-def is_dev(ctx):
-    return ctx.author.id in ownerids
+from .utils.checks import *
 
 
 class Owner():
