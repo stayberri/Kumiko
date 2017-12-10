@@ -1,5 +1,7 @@
 import discord
 import platform
+import requests
+import json
 from discord.ext import commands
 
 
@@ -35,9 +37,10 @@ class Info():
 
     @commands.command()
     async def about(self, ctx):
-        desc = "H-hello! My name is **Kumiko** and I am a multi-purpose Discord Bot made by "\
-               + "**Desiree#3658** in Python. "\
-               + "I-I have uh many features that you can choose from, m-mostly some fun commands to keep you occupied. "\
+        """Some stuff about me!"""
+        desc = "H-hello! My name is **Kumiko** and I am a multi-purpose Discord Bot made by " \
+               + "**Desiree#3658** in Python. " \
+               + "I-I have uh many features that you can choose from, m-mostly some fun commands to keep you occupied. " \
                + "I-I mean, it's n-not like I w-want to make sure you have fun or anything... baka!"
         await ctx.send(embed=discord.Embed(
             title="About Me",
@@ -52,6 +55,44 @@ class Info():
             value=str(len(self.bot.guilds)),
             inline=False
         ))
+
+    @commands.command()
+    async def urban(self, ctx, *, params):
+        """Search up a word on urban dictionary.
+        To get another result for the same argument, simply use `urban <word> -number <int>`"""
+        params = params.split(' -number ')
+        word = params[0]
+        if len(params) > 1:
+            try:
+                num = int(params[1])-1
+            except:
+                await ctx.send(":x: You gave me an improper number!")
+                return
+        else:
+            num = 0
+        r = requests.get(f"http://api.urbandictionary.com/v0/define?term={word}")
+        j = r.json()
+        try:
+            request = j['list'][num]
+        except IndexError:
+            await ctx.send(":x: There are no more results.")
+            return
+        definition = request['definition']
+        if len(definition) > 1000:
+            definition = definition[997:] + "..."
+        if definition == "":
+            definition = "None"
+        example = request['example']
+        if len(example) > 1000:
+            example = example[997:] + "..."
+        if example == "":
+            example = "None"
+        em = discord.Embed(description=f"Definition #{num+1}", color=ctx.author.color)
+        em.add_field(name="Definition", value=definition, inline=False)
+        em.add_field(name="Example", value=example)
+        em.set_author(name=f"Urban dictionary definition for {word}", url=request['permalink'])
+        em.set_footer(text=f"Author: {request['author']}")
+        await ctx.send(embed=em)
 
 
 def setup(bot):
