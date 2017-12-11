@@ -13,9 +13,10 @@ class Owner():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="eval", hidden=True)
+    @commands.command(name="eval")
     @commands.check(is_dev)
     async def _eval(self, ctx, *, code):
+        """Evaluate code. (Bot Owner Only)"""
         env = {
             'self': self,
             'bot': self.bot,
@@ -76,6 +77,18 @@ class Owner():
             em.set_thumbnail(url='http://www.iconsdb.com/icons/preview/green/checked-checkbox-xxl.png')
             em.add_field(name="Code", value=f"[See here.]({hastebin.post(code.encode('utf-8'))}.py)")
             await ctx.send(embed=em)
+
+    @commands.command()
+    @commands.check(is_dev)
+    async def reload(self, ctx, *, extension: str):
+        """Reload an extension (Bot Owner Only)"""
+        try:
+            self.bot.unload_extension(extension)
+            self.bot.load_extension(extension)
+            await ctx.send(f":ok_hand: Reloaded module `{extension}`")
+        except Exception as e:
+            await ctx.send(f":sob: I-I'm sorry, I couldn't reload the `{extension}` module >w< "
+                           + f"```py\n{traceback.format_exc()}```")
 
 
 def setup(bot):

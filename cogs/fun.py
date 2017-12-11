@@ -45,6 +45,14 @@ class Fun():
                     ":bowling: You didn't win, but you knocked down **{}** pins! ({} then {})".format(init + second,
                                                                                                       init, second))
 
+    @commands.command()
+    async def choose(self, ctx, *choices):
+        """Choose a random item from a list."""
+        if len(choices) < 2:
+            await ctx.send(":x: I-I need at least two things to choose!")
+            return
+        await ctx.send(f":thinking: O-oh, you want me to choose? I guess I choose `{random.choice(choices)}`")
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))

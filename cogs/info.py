@@ -1,6 +1,8 @@
 import discord
 import platform
 import requests
+import datetime
+import time
 import json
 from discord.ext import commands
 
@@ -64,7 +66,7 @@ class Info():
         word = params[0]
         if len(params) > 1:
             try:
-                num = int(params[1])-1
+                num = int(params[1]) - 1
             except:
                 await ctx.send(":x: You gave me an improper number!")
                 return
@@ -93,6 +95,19 @@ class Info():
         em.set_author(name=f"Urban dictionary definition for {word}", url=request['permalink'])
         em.set_footer(text=f"Author: {request['author']}")
         await ctx.send(embed=em)
+
+    @commands.command()
+    async def ping(self, ctx):
+        """Check my response time and my websocket ping"""
+        before = datetime.datetime.utcnow()
+        ping_msg = await ctx.send(":mega: Baka! Don't look at me when I'm pinging!")
+        ping = (datetime.datetime.utcnow() - before) * 1000
+        before2 = time.monotonic()
+        await (await self.bot.ws.ping())
+        after = time.monotonic()
+        ping2 = (after - before2) * 1000
+        await ping_msg.edit(content=":mega: W-wew! I responded in **{:.0f}ms**!".format(
+            ping.total_seconds()) + " `Websocket: {0:.0f}ms`".format(ping2))
 
 
 def setup(bot):
