@@ -73,11 +73,27 @@ class Mod():
     @commands.check(can_ban)
     async def unban(self, ctx, user_id: int):
         """This command allows you to unban a user by their ID."""
-        bans = await ctx.guild.bans()
-        if user_id not in [u.user.id for u in bans]:
-            await ctx.send(":x: U-uh, excuse me! That user doesn't seem to be banned!")
+        if user_id not in [u.user.id for u in await ctx.guild.bans()]:
+           await ctx.send(":x: U-uh, excuse me! That user doesn't seem to be banned!")
+           return
+        user = await self.bot.get_user_info(user_id)
+        try:
+            await ctx.guild.unban(user)
+        except discord.Forbidden:
+            await ctx.send(
+                ":x: Aaaaaa I-I'm sorry, I couldn't unban the person because I don't have the proper permissions")
             return
-
+        mod_log = discord.utils.get(ctx.guild.channels, name="mod-log")
+        if mod_log and mod_log.permissions_for(ctx.guild.me).send_messages:
+            await mod_log.send(embed=discord.Embed(
+                description="**Action:** Unban\n"
+                            + "**User:** " + str(user) + "\n",
+                color=0x00ff00).set_author(
+                name=str(ctx.author),
+                icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
+            )
+        await ctx.send(
+            f":ok_hand: I unbanned **{user}** and I sent a message to #mod-log if it exists")
 
 
 def setup(bot):

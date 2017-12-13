@@ -91,7 +91,9 @@ class Info():
             example = "None"
         em = discord.Embed(description=f"Definition #{num+1}", color=ctx.author.color)
         em.add_field(name="Definition", value=definition, inline=False)
-        em.add_field(name="Example", value=example)
+        em.add_field(name="Example", value=example, inline=False)
+        em.add_field(name="👍", value=request['thumbs_up'], inline=True)
+        em.add_field(name="👎", value=request['thumbs_down'], inline=True)
         em.set_author(name=f"Urban dictionary definition for {word}", url=request['permalink'])
         em.set_footer(text=f"Author: {request['author']}")
         await ctx.send(embed=em)

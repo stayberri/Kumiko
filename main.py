@@ -1,4 +1,4 @@
-import discord
+import discord, itertools, inspect, re
 import json
 import aiohttp
 import traceback
@@ -7,6 +7,10 @@ from cogs.utils.logger import *
 
 with open('config.json', 'r') as f:
     config = json.load(f)
+
+desc = """
+Kumiko: A discord bot dedicated for moderation, information, and fun.
+"""
 
 initial_extensions = (
     "cogs.owner",
@@ -18,7 +22,7 @@ initial_extensions = (
 
 class KumikoBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=config['prefix'])
+        super().__init__(command_prefix=config['prefix'], description=desc)
 
         self.console = 388807365400461332
 
@@ -47,18 +51,17 @@ class KumikoBot(commands.Bot):
             await self.process_commands(message)
 
     async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(
-                f":x: U-uh, sorry! You probably missed a required argument! Check `{ctx.prefix}help {ctx.command}`")
-        elif isinstance(error, commands.CheckFailure):
+        if isinstance(error, commands.CheckFailure):
             await ctx.send(":x: You do not have the permission required for this command.")
-        elif isinstance(error, commands.UserInputError):
-            await ctx.send(
-                f":x: The input you gave me caused an error! Make sure to check `{ctx.prefix}help {ctx.command}`")
+        elif isinstance(error, commands.UserInputError) or isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f":x: Improper arguments, showing command help. ```\n"
+                           + f"{ctx.prefix}{ctx.command.signature}\n\n"
+                           + f"{ctx.command.help}\n```")
         elif isinstance(error, commands.CommandNotFound):
             pass
         else:
             await ctx.send(f":x: {str(error)}")
             await send_log_event(console, f"I ran into an error on command `{ctx.command}`:\n{str(error)}")
+
 
 KumikoBot().run(config['token'])
