@@ -1,0 +1,7 @@
+{
+  "token": "token here",
+  "prefix": [
+    "insert prefix(es) here",
+    "second prefix if given"
+  ]
+}
