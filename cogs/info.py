@@ -149,8 +149,8 @@ class Info():
         if r.text.startswith('{"coord"'):
             j = r.json()
             em = discord.Embed(
-                title=f":flag_{j['sys']['country'].lower()}: Weather for {j['name']}",
-                description=j['weather'][0]['main'],
+                title=f":flag_{j['sys']['country'].lower()}: Weather for {j['name']}, {j['sys']['country']}",
+                description=f"{j['weather'][0]['main']} ({j['clouds']['all']}% clouds)",
                 color=ctx.author.color
             )
             def get_temp(n):
