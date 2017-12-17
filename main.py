@@ -49,6 +49,11 @@ class KumikoBot(commands.Bot):
     async def on_message(self, message):
         if not message.author.bot:
             await self.process_commands(message)
+            if message.content == "<@!315297886613012481>" or message.content == "<@315297886613012481>":
+                await message.channel.send(":wave: Hi! My prefixes are `k.`, `kumiko`, and `@Kumiko#0304`. Use them like\n"
+                                           + "`k.help`\n`kumiko help`\n`@Kumiko#0304 help`")
+    async def on_guild_join(self, guild):
+        await send_log_event(console, f":tada: I joined the guild `{guild.name}` with `{len(guild.members)}` members owned by `{guild.owner}`")
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CheckFailure):

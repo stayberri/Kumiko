@@ -12,6 +12,7 @@ from .utils.checks import *
 class Owner():
     def __init__(self, bot):
         self.bot = bot
+        self.last_result = None
 
     @commands.command(name="eval")
     @commands.check(is_dev)
@@ -25,7 +26,8 @@ class Owner():
             'guild': ctx.guild,
             'channel': ctx.channel,
             'author': ctx.author,
-            'me': ctx.me
+            'me': ctx.me,
+            'that': self.last_result
         }
         env.update(globals())
 
@@ -66,10 +68,12 @@ class Owner():
             if ret is None or type(ret) is discord.Message:
                 if value:
                     x = f"{value}"
+                    self.last_result = value
                 else:
                     x = "Executed successfully with no objects returned."
             else:
                 x = f"Executed successfully and returned: {value}{ret}"
+                self.last_result = f"{value}{ret}"
             em = discord.Embed(description=x, color=0x00ff00)
             em.set_author(name="Evaluated with success",
                           icon_url=ctx.message.author.avatar_url.replace("?size=1024", ""))

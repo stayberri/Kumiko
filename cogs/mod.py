@@ -95,6 +95,22 @@ class Mod():
         await ctx.send(
             f":ok_hand: I unbanned **{user}** and I sent a message to #mod-log if it exists")
 
+    @commands.command()
+    @commands.check(can_manage_messages)
+    async def prune(self, ctx, *, number_of_messages: int):
+        """Prune a number of messages from a channel.
+        Minimum is 3, maximum is 100. If the number is > 100, it will shrink down to 100 for you"""
+        if number_of_messages > 100:
+            number_of_messages = 100
+        if number_of_messages < 3:
+            await ctx.send(":x: B-baka! That's too few messages!")
+            return
+        mgs = []
+        async for m in ctx.channel.history(limit=number_of_messages):
+            mgs.append(m)
+        await ctx.channel.delete_messages(mgs)
+        await ctx.send(f":white_check_mark: Deleted `{len(mgs)}` messages!", delete_after=5)
+
 
 def setup(bot):
     bot.add_cog(Mod(bot))
