@@ -1,5 +1,6 @@
 {
   "token": "token here",
+  "weather-token": "OpenWeatherMap API token",
   "prefix": [
     "insert prefix(es) here",
     "second prefix if given"
