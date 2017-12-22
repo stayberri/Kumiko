@@ -21,6 +21,13 @@ as it is your choice to self host. However, here are some basic steps.
           -> https://i.imgur.com/FwwgdtU.png
 4.- Run the bot from the `main.py` file.
 ```
+As for APIs that need tokens, I currently use the following:
+<br>**OpenWeatherMap**</br>
+**Weeb.sh**
+
+About weeb.sh, the API is private. If you do not have access to it, you may want to remove the `action` files from being initialised. To
+do this, go into the `main.py` folder and in the `initial_extensions` area, remove `cogs.action`, as seen below.
+![](https://i.imgur.com/M7EH8Us.gif)
 
 # Inviting me
 I am currently not public as I am unfinished. However, the invite link will be [this.](http://is.gd/kumiko)
