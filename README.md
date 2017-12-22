@@ -14,7 +14,7 @@ multiple APIs that require tokens, some of which are not able to be achieved. Th
 as it is your choice to self host. However, here are some basic steps.
 
 ```
-1.- Go to your developer page and create an application. 
+1.- Go to your developer page and create an application and make it a bot user.
           -> After that, grab the token and fill in the `config.json` file with it.
 2.- Fill in config files.
 3.- Set up a MySQL database with the table `profiles` and look at the following link for the rows.
