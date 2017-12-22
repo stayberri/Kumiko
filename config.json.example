@@ -1,8 +1,15 @@
 {
   "token": "token here",
   "weather-token": "OpenWeatherMap API token",
+  "weeb-token": "weeb.sh token (not a public API)",
   "prefix": [
     "insert prefix(es) here",
-    "second prefix if given"
-  ]
+    "second prefix if applicable"
+  ],
+  "db": {
+    "ip":"database ip (note that the DB i use is MySQL)",
+    "user": "username",
+    "password": "password",
+    "name": "database name"
+    }
 }
