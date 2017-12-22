@@ -6,6 +6,7 @@ import time
 import json
 from discord.ext import commands
 from .utils.tools import *
+from .utils import checks
 
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -74,6 +75,31 @@ class Info():
 
         I don't actually know if the mobile bug still exists, but it's better to be safe than sorry."""
         await ctx.send("Invite me with <https://is.gd/kumiko>!")
+
+    @commands.command(name="help")
+    async def _help(self, ctx, command: str = None):
+        """Request help on a command or show the command list."""
+        bot = self.bot
+        if command is None:
+            em = discord.Embed(title="Kumiko Help", description=f"**{bot.description}**\n\nDo `{ctx.prefix}help <command>` without the brackets for extended help.", color=ctx.author.color)
+            for cog in sorted(bot.cogs, key=lambda x: x.lower()):
+                cog_commands = ""
+                for cmd in sorted(bot.commands, key=lambda x: x.name.lower()):
+                    if cmd.cog_name == cog:
+                        cog_commands += f"`{cmd}` "
+                if cog == "Owner" and checks.is_dev(ctx) is False:
+                    continue
+                em.add_field(name=cog, value=cog_commands, inline=False)
+            em.set_thumbnail(url=ctx.guild.me.avatar_url)
+            em.set_footer(text=f"Total commands: {len(bot.commands)} | Requested by {ctx.author.display_name}", icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
+            em.timestamp = datetime.datetime.now()
+        else:
+            c = bot.all_commands.get(command)
+            if c is None:
+                await ctx.send(":x: That is not a command.")
+                return
+            em = get_embedded_help_for(c, ctx)
+        await ctx.send(embed=em)
 
     @commands.command()
     async def urban(self, ctx, *, params):

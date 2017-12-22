@@ -4,6 +4,8 @@ import traceback
 import io
 import textwrap
 import json
+import requests
+import pymysql
 from contextlib import redirect_stdout
 from discord.ext import commands
 from .utils.checks import *
@@ -92,6 +94,24 @@ class Owner():
             await ctx.send(f":ok_hand: Reloaded module `{extension}`")
         except Exception as e:
             await ctx.send(f":sob: I-I'm sorry, I couldn't reload the `{extension}` module >w< "
+                           + f"```py\n{traceback.format_exc()}```")
+
+    @commands.command()
+    @commands.check(is_dev)
+    async def unload(self, ctx, *, extension: str):
+        """Unload an extension (Bot Owner Only)"""
+        self.bot.unload_extension(extension)
+        await ctx.send(f":ok_hand: Unloaded module `{extension}`")
+
+    @commands.command()
+    @commands.check(is_dev)
+    async def load(self, ctx, *, extension: str):
+        """Load an extension (Bot Owner Only)"""
+        try:
+            self.bot.load_extension(extension)
+            await ctx.send(f":ok_hand: Loaded module `{extension}`")
+        except Exception as e:
+            await ctx.send(f":sob: I-I'm sorry, I couldn't load the `{extension}` module >w< "
                            + f"```py\n{traceback.format_exc()}```")
 
 

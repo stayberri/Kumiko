@@ -1,7 +1,8 @@
 from discord.ext import commands
 
 ownerids = [
-    267207628965281792
+    267207628965281792,
+    132584525296435200
 ]
 
 

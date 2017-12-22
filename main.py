@@ -4,6 +4,7 @@ import aiohttp
 import traceback
 from discord.ext import commands
 from cogs.utils.logger import *
+from cogs.utils.tools import *
 
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -17,6 +18,9 @@ initial_extensions = (
     "cogs.fun",
     "cogs.info",
     "cogs.mod",
+    "cogs.action",
+    "cogs.image",
+    "cogs.currency",
 )
 
 
@@ -25,6 +29,7 @@ class KumikoBot(commands.Bot):
         super().__init__(command_prefix=config['prefix'], description=desc)
 
         self.console = 388807365400461332
+        self.remove_command("help")
 
         for extension in initial_extensions:
             try:
@@ -59,14 +64,17 @@ class KumikoBot(commands.Bot):
         if isinstance(error, commands.CheckFailure):
             await ctx.send(":x: You do not have the permission required for this command.")
         elif isinstance(error, commands.UserInputError) or isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f":x: Improper arguments, showing command help. ```\n"
-                           + f"{ctx.prefix}{ctx.command.signature}\n\n"
-                           + f"{ctx.command.help}\n```")
+            await ctx.send(":x: Y-You provided improper arguments or didn't give me any. Check the command help below!",
+                           embed=get_embedded_help_for(ctx.command, ctx))
+            ctx.command.reset_cooldown(ctx)
+        elif isinstance(error, commands.CommandOnCooldown):
+            m, s = divmod(error.retry_after, 60)
+            h, m = divmod(m, 60)
+            await ctx.send(f':x: You can use this command again in {"%d hours, %02d minutes and %02d seconds" % (h, m, s)}')
         elif isinstance(error, commands.CommandNotFound):
             pass
         else:
             await ctx.send(f":x: {str(error)}")
             await send_log_event(console, f"I ran into an error on command `{ctx.command}`:\n{str(error)}")
-
 
 KumikoBot().run(config['token'])
