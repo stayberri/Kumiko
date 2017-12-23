@@ -66,6 +66,7 @@ class KumikoBot(commands.Bot):
         elif isinstance(error, commands.UserInputError) or isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(":x: Y-You provided improper arguments or didn't give me any. Check the command help below!",
                            embed=get_embedded_help_for(ctx.command, ctx))
+
             ctx.command.reset_cooldown(ctx)
         elif isinstance(error, commands.CommandOnCooldown):
             m, s = divmod(error.retry_after, 60)

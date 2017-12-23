@@ -3,8 +3,10 @@ import discord
 import json
 import random
 import traceback
+import requests
 import asyncio
 from discord.ext import commands
+from .utils.tools import *
 
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -325,6 +327,64 @@ class Currency:
             cur.execute(f'UPDATE profiles SET bal = bal - {amount} WHERE userid = {ctx.author.id}')
         db.commit()
         db.close()
+
+    @commands.command()
+    async def trivia(self, ctx, *, difficulty: str = None):
+        """Play a game of trivia. If you win, you will gain 45 credits."""
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        cur = db.cursor()
+        url = "https://opentdb.com/api.php?amount=1"
+        if difficulty:
+            url += "&difficulty="+difficulty
+        r = requests.get(url)
+        j = r.json()
+        correct = remove_html(j['results'][0]['correct_answer'])
+        x = j['results'][0]['incorrect_answers']
+        x.append(correct)
+        y = []
+        for val in x:
+            val = remove_html(val)
+            y.append(val)
+        z = sorted(y, key=lambda l: l.lower())
+        em = discord.Embed(description=remove_html(j['results'][0]['question']), color=ctx.author.color)
+        em.add_field(name="Category",value=j['results'][0]['category'])
+        em.add_field(name="Difficulty",value=j['results'][0]['difficulty'])
+        em.add_field(name="Answers",value=("\n".join(y)),inline=False)
+        await ctx.send(embed=em)
+        def check1(m):
+            return m.author.id == ctx.author.id and m.channel == ctx.channel
+        try:
+            msg = await self.bot.wait_for('message', check=check1, timeout=120.0)
+        except asyncio.TimeoutError:
+            await ctx.send("You didnt answer in time, the correct answer was `{}`".format(corect))
+            return
+        if msg.content.lower() == correct.lower():
+            await ctx.send(":white_check_mark: **{}** got the correct answer and won **$45** credits!".format(ctx.author.display_name))
+            cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, {45}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {45}')
+            db.commit()
+            db.close()
+            return
+        else:
+            if len(j['results'][0]['incorrect_answers']) > 2:
+                await ctx.send(":x: That isn't right. You have one more try.")
+                def check2(m):
+                    return m.author.id == ctx.author.id and m.channel == ctx.channel
+                try:
+                    msg2 = await self.bot.wait_for('message', check=check2, timeout=120.0)
+                except asyncio.TimeoutError:
+                    await ctx.send("You didnt answer in time, the correct answer was `{}`".format(corect))
+                    return
+                if msg2.content.lower() == correct.lower():
+                    await ctx.send(":white_check_mark: **{}** got the correct answer and won **$45** credits!".format(ctx.author.display_name))
+                    cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, {45}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {45}')
+                    db.commit()
+                    db.close()
+                    return
+                else:
+                    await ctx.send(":x: That's not right. The correct answer was `{}`".format(correct))
+            else:
+                await ctx.send(":x: That's not right. The correct answer was `{}`".format(correct))
+
 
 def setup(bot):
     bot.add_cog(Currency(bot))

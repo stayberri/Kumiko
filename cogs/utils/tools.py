@@ -24,11 +24,14 @@ def get_embedded_help_for(command, ctx):
     em.set_author(name=f"Help for command {c.name}", icon_url=ctx.guild.me.avatar_url)
     em.add_field(name="Description", value=c.help, inline=False)
     em.add_field(name="Usage", value=f"`{ctx.prefix}{c.signature}`", inline=False)
-    if len(c.aliases) > 0:
-        em.add_field(name="Alias(es)", value=f"`{'`, `'.join(c.aliases)}`")
+#    if len(c.aliases) > 0:
+#        em.add_field(name="Alias(es)", value=f"`{'`, `'.join(c.aliases)}`")
     em.add_field(name="Note",
-                 value="Note that arguments surrounded with `[]` are not required while arguments surrounded by `<>` are required. Do not include either of these in the command.")
+                 value="Note that **arguments** surrounded with `[]` are not required while arguments surrounded by `<>` are required. Do not include either of these in the command. This only applies to arguments, as brackets in command name simply mean that there are aliases to the command.")
     em.set_footer(text=f"Requested by {ctx.author.display_name}",
                   icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
     em.timestamp = datetime.datetime.now()
     return em
+
+def remove_html(string):
+    return string.replace('&amp;', '&').replace("&lt;", '<').replace("&gt;", '>').replace('&quot;', '"').replace('&#039;', "'")
