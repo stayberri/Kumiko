@@ -1,9 +1,13 @@
 from discord.ext import commands
+import json
+from os import path
 
-ownerids = [
-    267207628965281792,
-    132584525296435200
-]
+basepath = path.dirname(__file__)
+filepath = path.abspath(path.join(basepath, "..", "..", "config.json"))
+with open(filepath, 'r') as f:
+    config = json.load(f)
+
+ownerids = config['owners']
 
 
 def is_dev(ctx):
