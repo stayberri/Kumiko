@@ -39,6 +39,6 @@ Desiree#3658 - Main developer.
 
 # Links
 [Discord.py](https://github.com/Rapptz/discord.py)
-<br>[Python 3.6](https://www.python.org/downloads/release/python-360/)
+<br>[Python 3.6](https://www.python.org/downloads/release/python-360/)</br>
 DiscordBots (coming soon)
 <br>DBL (coming soon)
