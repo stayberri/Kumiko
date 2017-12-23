@@ -6,6 +6,10 @@
     "insert prefix(es) here",
     "second prefix if applicable"
   ],
+  "owners": [
+    12345,
+    67890
+  ]
   "db": {
     "ip":"database ip (note that the DB i use is MySQL)",
     "user": "username",
