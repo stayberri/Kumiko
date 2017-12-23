@@ -22,22 +22,23 @@ as it is your choice to self host. However, here are some basic steps.
 4.- Run the bot from the `main.py` file.
 ```
 As for APIs that need tokens, I currently use the following:
-<br>**OpenWeatherMap**</br>
+<br>**OpenWeatherMap**
 **Weeb.sh**
 
 About weeb.sh, the API is private. If you do not have access to it, you may want to remove the `action` and `image` files from being initialised. To
 do this, go into the `main.py` file and in the `initial_extensions` area, remove `cogs.action` and `cogs.image`, as seen below.
-<br>![](https://i.imgur.com/jZqJT5D.gif)</br>
+
+![](https://i.imgur.com/jZqJT5D.gif)
 
 # Inviting me
 I am currently not public as I am unfinished. However, the invite link will be [this.](http://is.gd/kumiko)
 
 # Contributors
 Desiree#3658 - Main developer.
-<br>MrLar#8117 - Provides hosting & database.</br>
+<br>MrLar#8117 - Provides hosting & database.
 
 # Links
 [Discord.py](https://github.com/Rapptz/discord.py)
-<br>[Python 3.6](https://www.python.org/downloads/release/python-360/)</br>
+<br>[Python 3.6](https://www.python.org/downloads/release/python-360/)
 DiscordBots (coming soon)
-<br>DBL (coming soon)</br>
+<br>DBL (coming soon)
