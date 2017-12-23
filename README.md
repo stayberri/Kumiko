@@ -25,9 +25,9 @@ As for APIs that need tokens, I currently use the following:
 <br>**OpenWeatherMap**</br>
 **Weeb.sh**
 
-About weeb.sh, the API is private. If you do not have access to it, you may want to remove the `action` files from being initialised. To
-do this, go into the `main.py` file and in the `initial_extensions` area, remove `cogs.action`, as seen below.
-![](https://i.imgur.com/M7EH8Us.gif)
+About weeb.sh, the API is private. If you do not have access to it, you may want to remove the `action` and `image` files from being initialised. To
+do this, go into the `main.py` file and in the `initial_extensions` area, remove `cogs.action` and `cogs.image`, as seen below.
+![](https://i.imgur.com/jZqJT5D.gif)
 
 # Inviting me
 I am currently not public as I am unfinished. However, the invite link will be [this.](http://is.gd/kumiko)
