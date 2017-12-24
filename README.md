@@ -31,7 +31,7 @@ do this, go into the `main.py` file and in the `initial_extensions` area, remove
 ![](https://i.imgur.com/jZqJT5D.gif)
 
 # Inviting me
-I am currently not public as I am unfinished. However, the invite link will be [this.](http://is.gd/kumiko)
+T-thanks for wanting to invite me! You can do so using [this link.](http://is.gd/kumiko)
 
 # Contributors
 Desiree#3658 - Main developer.
