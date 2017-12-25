@@ -24,7 +24,7 @@ as it is your choice to self host. However, here are some basic steps.
 ```
 As for APIs that need tokens, I currently use the following:
 <br>**OpenWeatherMap**
-**Weeb.sh**
+<br>**Weeb.sh**
 
 About weeb.sh, the API is private. If you do not have access to it, you may want to remove the `action` and `image` files from being initialised. To
 do this, go into the `main.py` file and in the `initial_extensions` area, remove `cogs.action` and `cogs.image`, as seen below.
