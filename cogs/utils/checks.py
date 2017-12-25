@@ -15,16 +15,20 @@ def is_dev(ctx):
 
 
 def can_ban(ctx):
-    return ctx.author.id in ownerids or ctx.author.guild_permissions.ban_members
+    return is_dev(ctx) or ctx.author.guild_permissions.ban_members
 
 
 def can_kick(ctx):
-    return ctx.author.id in ownerids or ctx.author.guild_permissions.kick_members
+    return is_dev(ctx) or ctx.author.guild_permissions.kick_members
 
 
 def can_manage_guild(ctx):
-    return ctx.author.id in ownerids or ctx.author.guild_permissions.manage_guild
+    return is_dev(ctx) or ctx.author.guild_permissions.manage_guild
 
 
 def can_manage_messages(ctx):
-    return ctx.author.id in ownerids or ctx.author.guild_permissions.manage_messages
+    return is_dev(ctx) or ctx.author.guild_permissions.manage_messages
+
+
+def can_manage_roles(ctx):
+    return is_dev(ctx) or ctx.author.guild_permissions.manage_roles

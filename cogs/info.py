@@ -11,6 +11,7 @@ from .utils import checks
 with open('config.json', 'r') as f:
     config = json.load(f)
 
+
 class Info():
     def __init__(self, bot):
         self.bot = bot
@@ -81,7 +82,9 @@ class Info():
         """Request help on a command or show the command list."""
         bot = self.bot
         if command is None:
-            em = discord.Embed(title="Kumiko Help", description=f"**{bot.description}**\n\nDo `{ctx.prefix}help <command>` without the brackets for extended help.", color=ctx.author.color)
+            em = discord.Embed(title="Kumiko Help",
+                               description=f"**{bot.description}**\n\nDo `{ctx.prefix}help <command>` without the brackets for extended help.",
+                               color=ctx.author.color)
             for cog in sorted(bot.cogs, key=lambda x: x.lower()):
                 cog_commands = ""
                 for cmd in sorted(bot.commands, key=lambda x: x.name.lower()):
@@ -91,7 +94,8 @@ class Info():
                     continue
                 em.add_field(name=cog, value=cog_commands, inline=False)
             em.set_thumbnail(url=ctx.guild.me.avatar_url)
-            em.set_footer(text=f"Total commands: {len(bot.commands)} | Requested by {ctx.author.display_name}", icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
+            em.set_footer(text=f"Total commands: {len(bot.commands)} | Requested by {ctx.author.display_name}",
+                          icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
             em.timestamp = datetime.datetime.now()
         else:
             c = bot.all_commands.get(command)
@@ -179,19 +183,25 @@ class Info():
                 description=f"{j['weather'][0]['main']} ({j['clouds']['all']}% clouds)",
                 color=ctx.author.color
             )
+
             def get_temp(n):
                 cel = n - 273.15
-                fa = n * 9/5 - 459.67
+                fa = n * 9 / 5 - 459.67
                 return f"{round(cel)} °C | {round(fa)} °F"
+
             def get_wind(n):
                 imp = n * 2.2
                 return f"{n} m/s | {round(imp)} mph"
+
             def get_pressure(n):
                 bar = n / 1000
                 return f"{round(bar)} bar | {n} hPA"
+
             em.add_field(
                 name="🌡 Temperature",
-                value=f"Current: {get_temp(j['main']['temp'])}\nMax: {get_temp(j['main']['temp_max'])}\nMin: {get_temp(j['main']['temp_min'])}"
+                value=f"Current: {get_temp(j['main']['temp'])}\n"
+                      + "Max: {get_temp(j['main']['temp_max'])}\n"
+                      + "Min: {get_temp(j['main']['temp_min'])}"
             ).add_field(
                 name="💧 Humidity",
                 value=f"{j['main']['humidity']}%"
@@ -257,6 +267,32 @@ class Info():
             value=", ".join([r.name for r in sorted(g.roles, key=lambda x: -x.position) if not r.is_default()])
         )
         await ctx.send(embed=guild_embed)
+
+    @commands.command(aliases=["user", "uinfo"])
+    async def userinfo(self, ctx, *, user: discord.Member = None):
+        """Display information about a user."""
+        if not user:
+            user = ctx.author
+        em = discord.Embed(color=user.color)
+        em.add_field(name="Joined At:", value=user.joined_at.strftime("%A %d %B %Y at %H:%M:%S"), inline=False)
+        em.add_field(name="Created At:", value=user.created_at.strftime("%A %d %B %Y at %H:%M:%S"), inline=False)
+        em.add_field(name="Days Since Join:", value=(datetime.datetime.now() - user.joined_at).days)
+        em.add_field(name="Days Since Creation:", value=(datetime.datetime.now() - user.created_at).days)
+        em.add_field(name="Status:", value=user.status)
+        em.add_field(name="Nickname:", value=user.nick)
+        em.add_field(name="Voice Channel:", value=user.voice.channel if user.voice is not None else None)
+        em.add_field(name="Is Bot:", value=user.bot)
+        em.add_field(name="Game:", value=user.game, inline=False)
+        em.add_field(name="Top Role:", value=user.top_role.name)
+        em.add_field(name="Highest Position:", value=user.top_role.position)
+        em.add_field(name=f"Roles [{len(user.roles) - 1}]:", value=", ".join(
+            [r.name for r in sorted(user.roles, key=lambda x: -x.position) if not r.is_default()]))
+        em.set_thumbnail(url=user.avatar_url.replace("?size=1024", ""))
+        em.set_author(name=f"{user} ({user.id})", icon_url=user.avatar_url.replace("?size=1024", ""),
+                      url=user.avatar_url.replace("?size=1024", ""))
+        em.set_footer(text=f"Requested by {ctx.author.display_name}",
+                      icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
+        await ctx.send(embed=em)
 
 
 def setup(bot):

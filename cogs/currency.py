@@ -7,58 +7,10 @@ import requests
 import asyncio
 from discord.ext import commands
 from .utils.tools import *
+from .utils.db import *
 
 with open('config.json', 'r') as f:
     config = json.load(f)
-
-def get_description(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
-    cur = db.cursor()
-    cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
-    results = cur.fetchall()
-    if results:
-        for row in results:
-            desc = row[1]
-        return desc
-    else:
-        return "No description set."
-
-def get_balance(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
-    cur = db.cursor()
-    cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
-    results = cur.fetchall()
-    if results:
-        for row in results:
-            bal = row[2]
-        return bal
-    else:
-        return 0
-
-def get_married(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
-    cur = db.cursor()
-    cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
-    results = cur.fetchall()
-    if results:
-        for row in results:
-            marriage = row[3]
-        return marriage
-
-def get_reps(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
-    cur = db.cursor()
-    cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
-    results = cur.fetchall()
-    if results:
-        for row in results:
-            reps = row[4]
-        if reps is not None:
-            return reps
-        else:
-            return 0
-    else:
-        return 0
 
 
 class Currency:
@@ -70,10 +22,12 @@ class Currency:
     async def loot(self, ctx):
         """Loot the current channel!
         You can get a maximum of 100 credits. You might also recieve none."""
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
         value = random.randint(0, 100)
-        cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, {value}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {value}')
+        cur.execute(
+            f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, {value}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {value}')
         db.commit()
         if value == 0:
             await ctx.send(":tada: Congratulations, you looted- oh, I-I'm sorry. You didn't loot any credits!")
@@ -85,7 +39,8 @@ class Currency:
     @commands.command(aliases=["bal"])
     async def balance(self, ctx, *, user: discord.Member = None):
         """Check your current balance"""
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
         if user is None:
             user = ctx.author
@@ -96,9 +51,11 @@ class Currency:
     @commands.cooldown(rate=1, per=86400, type=commands.BucketType.user)
     async def daily(self, ctx):
         """Recieve your daily reward."""
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
-        cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, 150, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + 150')
+        cur.execute(
+            f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, 150, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + 150')
         db.commit()
         await ctx.send(":white_check_mark: You successfully claimed your daily credits of **$150**")
         db.close()
@@ -116,7 +73,7 @@ class Currency:
         else:
             m = "Nobody"
         em = discord.Embed(
-            title=user.display_name+"'s profile",
+            title=user.display_name + "'s profile",
             description=get_description(user.id),
             color=ctx.author.color
         ).add_field(
@@ -151,9 +108,12 @@ class Currency:
         if user.bot:
             await ctx.send(":x: You can't marry a bot >~>")
             return
-        await ctx.send(f"{user.display_name}, say `yes` or `no` to the marriage proposal from {ctx.author.display_name}")
+        await ctx.send(
+            f"{user.display_name}, say `yes` or `no` to the marriage proposal from {ctx.author.display_name}")
+
         def check(m):
             return m.author.id == user.id and m.channel == ctx.channel
+
         try:
             msg = await self.bot.wait_for('message', check=check, timeout=60.0)
         except asyncio.TimeoutError:
@@ -162,10 +122,13 @@ class Currency:
             if msg.content.lower() == 'no':
                 await ctx.send("Proposal denied. :(")
             elif msg.content.lower() == 'yes':
-                db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+                db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'],
+                                     config['db']['name'], charset='utf8mb4')
                 cur = db.cursor()
-                cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, 0, {user.id}, 0) ON DUPLICATE KEY UPDATE marryid = {user.id}')
-                cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user.id}, NULL, 0, {ctx.author.id}, 0) ON DUPLICATE KEY UPDATE marryid = {ctx.author.id}')
+                cur.execute(
+                    f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, 0, {user.id}, 0) ON DUPLICATE KEY UPDATE marryid = {user.id}')
+                cur.execute(
+                    f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user.id}, NULL, 0, {ctx.author.id}, 0) ON DUPLICATE KEY UPDATE marryid = {ctx.author.id}')
                 await ctx.send(f":tada: {ctx.author.display_name} and {user.display_name} are now married!")
                 db.commit()
                 db.close()
@@ -177,10 +140,13 @@ class Currency:
         """Divorce yourself from the person you are married to."""
         if get_married(ctx.author.id):
             user = get_married(ctx.author.id)
-            db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+            db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'],
+                                 config['db']['name'], charset='utf8mb4')
             cur = db.cursor()
-            cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, 0, NULL, 0) ON DUPLICATE KEY UPDATE marryid = NULL')
-            cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user}, "{get_description(user)}", {get_balance(user)}, NULL, 0) ON DUPLICATE KEY UPDATE marryid = NULL')
+            cur.execute(
+                f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, 0, NULL, 0) ON DUPLICATE KEY UPDATE marryid = NULL')
+            cur.execute(
+                f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user}, "{get_description(user)}", {get_balance(user)}, NULL, 0) ON DUPLICATE KEY UPDATE marryid = NULL')
             await ctx.send(":white_check_mark: You're single now I guess. That's nice.")
             db.commit()
             db.close()
@@ -193,10 +159,12 @@ class Currency:
         if len(description) >= 300:
             await ctx.send(":x: That description is too long! Max is 300 characters.")
             return
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
         descri = description.replace('"', '\"')
-        cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, "{descri}", 0, NULL, 0) ON DUPLICATE KEY UPDATE description = "{descri}"')
+        cur.execute(
+            f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, "{descri}", 0, NULL, 0) ON DUPLICATE KEY UPDATE description = "{descri}"')
         db.commit()
         db.close()
         await ctx.send(":tada: Set your description. Check it out on `{}profile`!".format(ctx.prefix))
@@ -204,7 +172,8 @@ class Currency:
     @commands.command()
     async def richest(self, ctx):
         """Check the richest users."""
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
         cur.execute(f'SELECT userid,bal FROM profiles ORDER BY bal DESC LIMIT 15')
         results = cur.fetchall()
@@ -213,7 +182,7 @@ class Currency:
             row = results[i]
             user = self.bot.get_user(int(row[0]))
             if user is not None:
-                n = i+1
+                n = i + 1
                 if n < 10:
                     n = f"0{i+1}"
                 msg += f":star: **{n} | {user}** - ${row[1]}\n"
@@ -236,9 +205,11 @@ class Currency:
             await ctx.send(":x: Bots can't be repped.")
             ctx.command.reset_cooldown(ctx)
             return
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
-        cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user.id}, NULL, 0, NULL, 1) ON DUPLICATE KEY UPDATE reps = reps + 1')
+        cur.execute(
+            f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user.id}, NULL, 0, NULL, 1) ON DUPLICATE KEY UPDATE reps = reps + 1')
         db.commit()
         db.close()
         await ctx.send(f":ok_hand: Added one reputation point to **{user.display_name}**")
@@ -255,7 +226,8 @@ class Currency:
             await ctx.send(":x: Seriously...")
             ctx.command.reset_cooldown(ctx)
             return
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
         var = random.randint(1, 3)
         if var == 2:
@@ -280,9 +252,11 @@ class Currency:
         if amount > get_balance(ctx.author.id):
             await ctx.send(":x: You're broke.")
             return
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
-        cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user.id}, NULL, {amount}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {amount}')
+        cur.execute(
+            f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({user.id}, NULL, {amount}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {amount}')
         cur.execute(f'UPDATE profiles SET bal = bal - {amount} WHERE userid = {ctx.author.id}')
         db.commit()
         db.close()
@@ -293,10 +267,10 @@ class Currency:
     async def bet(self, ctx, colour: str, amount: int):
         """Bet on a horse race using the colour of the horse."""
         winmsgs = [
-            "You bet ${0} on the {1} horse and won {2} credits!", # .format(amount, colour, gains)
+            "You bet ${0} on the {1} horse and won {2} credits!",  # .format(amount, colour, gains)
             "You bet ${0} on the {1} horse...\n\nIt was a close match, but the {1} horse won, making you win {2} credits!",
             "You wanted to bet ${0} on the horse your friend chose, but instead you bet on the {1} horse. You won {2} credits anyway!"
-                   ]
+        ]
         losemsgs = [
             "You bet ${0} on the {1} horse, but the {2} horse won instead. You lost your bet.",
             "You went with your friend's vote of the {1} horse, betting ${0}, but you lost your bet when the {2} horse won.",
@@ -308,7 +282,8 @@ class Currency:
             ctx.command.reset_cooldown(ctx)
             return
         if not colour.lower() in colours:
-            await ctx.send(":x: I-I'm sorry, that is not a valid colour! The valid options are: `{}`".format("`, `".join(colours)))
+            await ctx.send(
+                ":x: I-I'm sorry, that is not a valid colour! The valid options are: `{}`".format("`, `".join(colours)))
             ctx.command.reset_cooldown(ctx)
             return
         if amount <= 0:
@@ -317,7 +292,8 @@ class Currency:
             return
         c = random.choice(colours)
         gains = (amount * 0.80)
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
         cur = db.cursor()
         if c == colour.lower():
             await ctx.send(f":tada: {random.choice(winmsgs).format(amount, colour, round(gains))}")
@@ -327,63 +303,6 @@ class Currency:
             cur.execute(f'UPDATE profiles SET bal = bal - {amount} WHERE userid = {ctx.author.id}')
         db.commit()
         db.close()
-
-    @commands.command()
-    async def trivia(self, ctx, *, difficulty: str = None):
-        """Play a game of trivia. If you win, you will gain 45 credits."""
-        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
-        cur = db.cursor()
-        url = "https://opentdb.com/api.php?amount=1"
-        if difficulty:
-            url += "&difficulty="+difficulty
-        r = requests.get(url)
-        j = r.json()
-        correct = remove_html(j['results'][0]['correct_answer'])
-        x = j['results'][0]['incorrect_answers']
-        x.append(correct)
-        y = []
-        for val in x:
-            val = remove_html(val)
-            y.append(val)
-        z = sorted(y, key=lambda l: l.lower())
-        em = discord.Embed(description=remove_html(j['results'][0]['question']), color=ctx.author.color)
-        em.add_field(name="Category",value=j['results'][0]['category'])
-        em.add_field(name="Difficulty",value=j['results'][0]['difficulty'])
-        em.add_field(name="Answers",value=("\n".join(y)),inline=False)
-        await ctx.send(embed=em)
-        def check1(m):
-            return m.author.id == ctx.author.id and m.channel == ctx.channel
-        try:
-            msg = await self.bot.wait_for('message', check=check1, timeout=120.0)
-        except asyncio.TimeoutError:
-            await ctx.send("You didnt answer in time, the correct answer was `{}`".format(corect))
-            return
-        if msg.content.lower() == correct.lower():
-            await ctx.send(":white_check_mark: **{}** got the correct answer and won **$45** credits!".format(ctx.author.display_name))
-            cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, {45}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {45}')
-            db.commit()
-            db.close()
-            return
-        else:
-            if len(j['results'][0]['incorrect_answers']) > 2:
-                await ctx.send(":x: That isn't right. You have one more try.")
-                def check2(m):
-                    return m.author.id == ctx.author.id and m.channel == ctx.channel
-                try:
-                    msg2 = await self.bot.wait_for('message', check=check2, timeout=120.0)
-                except asyncio.TimeoutError:
-                    await ctx.send("You didnt answer in time, the correct answer was `{}`".format(corect))
-                    return
-                if msg2.content.lower() == correct.lower():
-                    await ctx.send(":white_check_mark: **{}** got the correct answer and won **$45** credits!".format(ctx.author.display_name))
-                    cur.execute(f'INSERT INTO profiles (userid, description, bal, marryid, reps) VALUES ({ctx.author.id}, NULL, {45}, NULL, 0) ON DUPLICATE KEY UPDATE bal = bal + {45}')
-                    db.commit()
-                    db.close()
-                    return
-                else:
-                    await ctx.send(":x: That's not right. The correct answer was `{}`".format(correct))
-            else:
-                await ctx.send(":x: That's not right. The correct answer was `{}`".format(correct))
 
 
 def setup(bot):
