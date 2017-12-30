@@ -12,7 +12,7 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 
 
-class Info():
+class Info:
     def __init__(self, bot):
         self.bot = bot
         self.version = '1.0.0'
@@ -48,27 +48,41 @@ class Info():
                        + f"```")
 
     @commands.command()
-    async def about(self, ctx):
-        """Some stuff about me!"""
-        desc = "H-hello! My name is **Kumiko** and I am a multi-purpose Discord Bot made by " \
-               + "**Desiree#3658** in Python. " \
-               + "I-I have uh many features that you can choose from, m-mostly some fun commands to keep you occupied. " \
-               + "I-I mean, it's n-not like I w-want to make sure you have fun or anything... baka!"
-        await ctx.send(embed=discord.Embed(
-            title="About Me",
-            description=desc,
-            color=ctx.author.color
-        ).add_field(
-            name="Version",
-            value=self.version
-        ).add_field(
-            name="Guilds",
-            value=str(len(self.bot.guilds))
-        ).add_field(
-            name="Invite",
-            value="[Click here!](https://discordapp.com/api/oauth2/authorize?client_id=315297886613012481&permissions="
-                  + "471198870&scope=bot) If you need a non-embed link, use `{}invite`!".format(ctx.prefix)
-        ))
+    async def about(self, ctx, subcommand: str = None):
+        """Some stuff about me!
+        Append `patreon` or `credits` to the command to get the credits and current patreon supporters."""
+        if subcommand == "patreon":
+            bot_hub = discord.utils.get(self.bot.guilds, id=315251940999299072)
+            patron_role = discord.utils.get(bot_hub.roles, id=318113423831465984)
+            em = discord.Embed(title="All Patrons (Total: {})".format(len(patron_role.members)),
+                               description=", ".join([str(m) for m in patron_role.members]), color=ctx.author.color)
+            await ctx.send(embed=em)
+        elif subcommand == "credits":
+            desc = f"**{self.bot.get_user(267207628965281792)}:** Developer (Godavaru & Kumiko)\n" \
+                   + f"**{self.bot.get_user(99965250052300800)}:** Developer (Godavaru)\n" \
+                   + f"**{self.bot.get_user(132584525296435200)}:** Hosting"
+            em = discord.Embed(title="Credited users", description=desc, color=ctx.author.color)
+            await ctx.send(embed=em)
+        else:
+            desc = "H-hello! My name is **Kumiko** and I am a multi-purpose Discord Bot made by " \
+                   + "**Desiree#3658** in Python. " \
+                   + "I-I have uh many features that you can choose from, m-mostly some fun commands to keep you occupied. " \
+                   + "I-I mean, it's n-not like I w-want to make sure you have fun or anything... baka!"
+            await ctx.send(embed=discord.Embed(
+                title="About Me",
+                description=desc,
+                color=ctx.author.color
+            ).add_field(
+                name="Version",
+                value=self.version
+            ).add_field(
+                name="Guilds",
+                value=str(len(self.bot.guilds))
+            ).add_field(
+                name="Invite",
+                value="[Click here!](https://discordapp.com/api/oauth2/authorize?client_id=315297886613012481&permissions="
+                      + "471198870&scope=bot) If you need a non-embed link, use `{}invite`!".format(ctx.prefix)
+            ))
 
     @commands.command()
     async def invite(self, ctx):
@@ -91,6 +105,8 @@ class Info():
                     if cmd.cog_name == cog:
                         cog_commands += f"`{cmd}` "
                 if cog == "Owner" and checks.is_dev(ctx) is False:
+                    continue
+                if cog_commands == "":
                     continue
                 em.add_field(name=cog, value=cog_commands, inline=False)
             em.set_thumbnail(url=ctx.guild.me.avatar_url)
@@ -200,8 +216,8 @@ class Info():
             em.add_field(
                 name="🌡 Temperature",
                 value=f"Current: {get_temp(j['main']['temp'])}\n"
-                      + "Max: {get_temp(j['main']['temp_max'])}\n"
-                      + "Min: {get_temp(j['main']['temp_min'])}"
+                      + f"Max: {get_temp(j['main']['temp_max'])}\n"
+                      + f"Min: {get_temp(j['main']['temp_min'])}"
             ).add_field(
                 name="💧 Humidity",
                 value=f"{j['main']['humidity']}%"
@@ -293,6 +309,70 @@ class Info():
         em.set_footer(text=f"Requested by {ctx.author.display_name}",
                       icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
         await ctx.send(embed=em)
+
+    @commands.command()
+    async def wiki(self, ctx, page: str = "home", category: str = None):
+        """Get a wiki page.
+
+        **All Valid Pages** ```
+        home
+        commands
+        modifiers
+        options```
+        **Shorthands** ```
+               Shorthand | Page
+        ---------------- | ----------------
+        cmds             | commands
+        mod              | modifiers
+        opts             | options
+        "format welcome" | modifiers
+        settings         | options```
+        **Command Categories** ```
+        action
+        currency
+        fun
+        image
+        mod
+        options```"""
+        pages = [
+            "home",
+            "commands",
+            "modifiers",
+            "options"
+        ]
+        shorthands = [
+            "cmds|commands",
+            "mod|modifiers",
+            "opts|options",
+            "format welcome|modifiers",  # this will have to be invoked with `kumiko wiki "format welcome"`
+            "settings|options"
+        ]
+        command_categories = [
+            "action",
+            "currency",
+            "fun",
+            "image",
+            "info",
+            "mod",
+            "options"
+        ]
+        p = page
+        for s in shorthands:
+            sp = s.split('|')
+            p = p.replace(sp[0], sp[1])
+        if not p.lower() in pages:
+            await ctx.send(":x: That is not a valid wiki page.")
+            return
+        if category and p != "commands":
+            await ctx.send(":x: Only the commands page uses categories.")
+            return
+        if category is not None and category.lower() not in command_categories:
+            await ctx.send(":x: That is not a documented command category.")
+            return
+        base_url = "https://github.com/Desiiii/Kumiko/wiki/" + titlecase(p)
+        if page == "commands" and category is not None:
+            base_url += "#" + category.lower()
+        await ctx.send(f":ok_hand: Generated the wiki link you needed! **<{base_url}>**")
 
 
 def setup(bot):

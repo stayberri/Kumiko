@@ -76,6 +76,38 @@ class Mod:
             await ctx.send(":x: I-I'm sorry, but you can't ban someone with a higher role than you!")
 
     @commands.command()
+    @commands.check(can_kick)
+    async def kick(self, ctx, member: discord.Member, *, reason: str = None):
+        """Kick a member from the guild.
+        You can also supply an optional reason. This will also send a message to the set modlog channel"""
+        r = reason
+        if not reason:
+            r = "No reason given."
+        if ctx.author.top_role.position > member.top_role.position:
+            try:
+                await ctx.guild.kick(member, reason=r)
+            except discord.Forbidden:
+                await ctx.send(
+                    f":x: I-I'm sorry, I couldn't kick `{member}` because I either don't have kick permissions "
+                    + "or my role is lower than theirs.")
+                return
+            mod_log_id = get_modlog_channel(ctx.guild.id)
+            if mod_log_id:
+                mod_log = self.bot.get_channel(int(mod_log_id))
+                if mod_log.permissions_for(ctx.guild.me).send_messages:
+                    await mod_log.send(embed=discord.Embed(
+                        description="**Action:** Kick\n"
+                                    + "**User:** " + str(member) + "\n"
+                                    + "**Reason:** " + r,
+                        color=0xff0000).set_author(
+                        name=str(ctx.author),
+                        icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
+                    )
+            await ctx.send(f":ok_hand: I kicked **{member}** for `{r}`")
+        else:
+            await ctx.send(":x: I-I'm sorry, but you can't ban someone with a higher role than you!")
+
+    @commands.command()
     @commands.check(can_ban)
     async def hackban(self, ctx, user_id: int, *, reason: str = None):
         """Ban a member by their user ID.

@@ -9,8 +9,10 @@ filepath = path.abspath(path.join(basepath, "..", "..", "config.json"))
 with open(filepath, 'r') as f:
     config = json.load(f)
 
+
 def check_disabled(guildid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM opts WHERE guildid = {guildid}')
     results = cur.fetchall()
@@ -26,8 +28,10 @@ def check_disabled(guildid):
         db.close()
         return ""
 
+
 def get_description(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
     results = cur.fetchall()
@@ -40,8 +44,10 @@ def get_description(userid):
         else:
             return "No description set."
 
+
 def get_balance(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
     results = cur.fetchall()
@@ -54,8 +60,10 @@ def get_balance(userid):
         db.close()
         return 0
 
+
 def get_married(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
     results = cur.fetchall()
@@ -65,8 +73,10 @@ def get_married(userid):
         db.close()
         return marriage
 
+
 def get_reps(userid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM profiles WHERE userid = {userid}')
     results = cur.fetchall()
@@ -82,8 +92,10 @@ def get_reps(userid):
         db.close()
         return 0
 
+
 def get_log_channel(guildid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM opts WHERE guildid = {guildid}')
     results = cur.fetchall()
@@ -93,8 +105,10 @@ def get_log_channel(guildid):
         db.close()
         return logchannel
 
+
 def get_modlog_channel(guildid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM opts WHERE guildid = {guildid}')
     results = cur.fetchall()
@@ -104,8 +118,10 @@ def get_modlog_channel(guildid):
         db.close()
         return modlogchannel
 
+
 def get_mute_role(guildid):
-    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'], charset='utf8mb4')
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
     cur = db.cursor()
     cur.execute(f'SELECT * FROM opts WHERE guildid = {guildid}')
     results = cur.fetchall()
@@ -114,3 +130,42 @@ def get_mute_role(guildid):
             muterole = row[4]
         db.close()
         return muterole
+
+
+def get_join_message(guildid):
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
+    cur = db.cursor()
+    cur.execute(f'SELECT * FROM opts WHERE guildid = {guildid}')
+    results = cur.fetchall()
+    if results:
+        for row in results:
+            joinmessage = row[5]
+        db.close()
+        return joinmessage
+
+
+def get_leave_message(guildid):
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
+    cur = db.cursor()
+    cur.execute(f'SELECT * FROM opts WHERE guildid = {guildid}')
+    results = cur.fetchall()
+    if results:
+        for row in results:
+            leavemessage = row[6]
+        db.close()
+        return leavemessage
+
+
+def get_welcome_channel(guildid):
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
+    cur = db.cursor()
+    cur.execute(f'SELECT * FROM opts WHERE guildid = {guildid}')
+    results = cur.fetchall()
+    if results:
+        for row in results:
+            welcome = row[7]
+        db.close()
+        return welcome
