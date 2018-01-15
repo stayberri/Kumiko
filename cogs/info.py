@@ -2,11 +2,15 @@ import discord
 import platform
 import requests
 import datetime
+import traceback
 import time
 import json
+import hastebin
+import os
 from discord.ext import commands
 from .utils.tools import *
 from .utils import checks
+from .utils import weeb
 
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -15,7 +19,7 @@ with open('config.json', 'r') as f:
 class Info:
     def __init__(self, bot):
         self.bot = bot
-        self.version = '1.0.0'
+        self.version = '1.1.0'
 
     @commands.command()
     async def info(self, ctx):
@@ -82,6 +86,13 @@ class Info:
                 name="Invite",
                 value="[Click here!](https://discordapp.com/api/oauth2/authorize?client_id=315297886613012481&permissions="
                       + "471198870&scope=bot) If you need a non-embed link, use `{}invite`!".format(ctx.prefix)
+            ).add_field(
+                name="Support Guild",
+                value="https://discord.gg/ewvvKHM"
+            ).add_field(
+                name="Useful Links",
+                value="[Github](https://github.com/Desiiii/Kumiko), "
+                      + "[Website](https://kumiko.site), and [Patreon](https://patreon.com/desii)"
             ))
 
     @commands.command()
@@ -91,7 +102,7 @@ class Info:
         I don't actually know if the mobile bug still exists, but it's better to be safe than sorry."""
         await ctx.send("Invite me with <https://is.gd/kumiko>!")
 
-    @commands.command(name="help")
+    @commands.command(name="help", aliases=["commands", "cmds"])
     async def _help(self, ctx, command: str = None):
         """Request help on a command or show the command list."""
         bot = self.bot
@@ -175,16 +186,23 @@ class Info:
             ping.total_seconds()) + " `Websocket: {0:.0f}ms`".format(ping2))
 
     @commands.command()
-    async def avatar(self, ctx, user: discord.Member = None):
+    async def avatar(self, ctx, *, user: discord.Member = None):
         """Get the avatar of a user!
         If the user is none, it will grab your avatar. If the user is not found, this message will be shown."""
         if user is None:
             user = ctx.author
         url = get_friendly_avatar(user)
         embed = discord.Embed(
-            title=f"{user.display_name}'s avatar"
+            color=ctx.author.color
         ).set_image(
             url=url
+        ).set_footer(
+            icon_url=get_friendly_avatar(ctx.author),
+            text=f"Requested by {ctx.author.display_name}"
+        ).set_author(
+            icon_url=url,
+            url=url,
+            name=f"{user.display_name}'s avatar"
         )
         await ctx.send(embed=embed)
 
@@ -238,51 +256,66 @@ class Info:
     async def guildinfo(self, ctx):
         """Get information on the guild you are currently in!"""
         g = ctx.guild
-        guild_embed = discord.Embed(
-            title=g.name,
-            description=f"Guild ID: {g.id}",
-            color=ctx.author.color
-        ).set_thumbnail(
-            url=g.icon_url
-        ).add_field(
-            name="Created At",
-            value=g.created_at.strftime("%A %d %B %Y at %H:%M:%S"),
-            inline=False
-        ).add_field(
-            name="Days Since Creation",
-            value=(datetime.datetime.now() - g.created_at).days
-        ).add_field(
-            name="Guild Region:",
-            value=g.region
-        ).add_field(
-            name="AFK Timeout",
-            value=f"{int(g.afk_timeout/60)} minutes"
-        ).add_field(
-            name="Owner",
-            value=str(g.owner)
-        ).add_field(
-            name="Total Channels",
-            value=len(g.channels)
-        ).add_field(
-            name="Category Channels",
-            value=len([c.name for c in g.channels if isinstance(c, discord.CategoryChannel)])
-        ).add_field(
-            name="Text Channels",
-            value=len([c.name for c in g.channels if isinstance(c, discord.TextChannel)])
-        ).add_field(
-            name="Voice Channels",
-            value=len([c.name for c in g.channels if isinstance(c, discord.VoiceChannel)])
-        ).add_field(
-            name="Verification Level",
-            value=g.verification_level
-        ).add_field(
-            name="Explicit Content Filter",
-            value=g.explicit_content_filter
-        ).add_field(
-            name=f"Roles - {len(g.roles)-1}",
-            value=", ".join([r.name for r in sorted(g.roles, key=lambda x: -x.position) if not r.is_default()])
-        )
-        await ctx.send(embed=guild_embed)
+        num = 0
+        if ctx.channel.permissions_for(ctx.me).external_emojis:
+            num = 1
+        online = len([m.name for m in g.members if m.status == discord.Status("online")])
+        idle = len([m.name for m in g.members if m.status == discord.Status("idle")])
+        dnd = len([m.name for m in g.members if m.status == discord.Status("dnd")])
+        try:
+            guild_embed = discord.Embed(
+                title=g.name,
+                description=f"Guild ID: {g.id}",
+                color=ctx.author.color
+            ).set_thumbnail(
+                url=g.icon_url
+            ).add_field(
+                name="Created At",
+                value=g.created_at.strftime("%A %d %B %Y at %H:%M:%S"),
+                inline=False
+            ).add_field(
+                name="Users - "+str(len(g.members)),
+                value=f"{get_status_emoji('online', num)} Online: {online}\n"
+                      + f"{get_status_emoji('idle', num)} Idle: {idle}\n"
+                      + f"{get_status_emoji('dnd', num)} DnD: {dnd}",
+                inline=False
+            ).add_field(
+                name="Days Since Creation",
+                value=(datetime.datetime.now() - g.created_at).days
+            ).add_field(
+                name="Guild Region:",
+                value=g.region
+            ).add_field(
+                name="AFK Timeout",
+                value=f"{int(g.afk_timeout/60)} minutes"
+            ).add_field(
+                name="Owner",
+                value=str(g.owner)
+            ).add_field(
+                name="Total Channels",
+                value=len(g.channels)
+            ).add_field(
+                name="Category Channels",
+                value=len([c.name for c in g.channels if isinstance(c, discord.CategoryChannel)])
+            ).add_field(
+                name="Text Channels",
+                value=len([c.name for c in g.channels if isinstance(c, discord.TextChannel)])
+            ).add_field(
+                name="Voice Channels",
+                value=len([c.name for c in g.channels if isinstance(c, discord.VoiceChannel)])
+            ).add_field(
+                name="Verification Level",
+                value=g.verification_level
+            ).add_field(
+                name="Explicit Content Filter",
+                value=g.explicit_content_filter
+            ).add_field(
+                name=f"Roles - {len(g.roles)-1}",
+                value=", ".join([r.name for r in sorted(g.roles, key=lambda x: -x.position) if not r.is_default()])
+            )
+            await ctx.send(embed=guild_embed)
+        except:
+            await ctx.send("```py\n{}\n```".format(traceback.format_exc()))
 
     @commands.command(aliases=["user", "uinfo"])
     async def userinfo(self, ctx, *, user: discord.Member = None):
@@ -308,6 +341,92 @@ class Info:
                       url=user.avatar_url.replace("?size=1024", ""))
         em.set_footer(text=f"Requested by {ctx.author.display_name}",
                       icon_url=ctx.author.avatar_url.replace("?size=1024", ""))
+        await ctx.send(embed=em)
+
+    @commands.command()
+    async def lyrics(self, ctx, *, song: str):
+        """Get lyrics to a song from the Genius API."""
+        params = song.split(' -number ')
+        s = params[0]
+        if len(params) > 1:
+            try:
+                num = int(params[1]) - 1
+            except ValueError:
+                num = 0
+        else:
+            num = 0
+        r = requests.get('https://api.genius.com/search?q='+s, headers={"Authorization": config['genius-token']})
+        j = r.json()
+        try:
+            res = j['response']['hits'][num]['result']
+            em = discord.Embed(description=res['full_title'], color=ctx.author.color)
+            em.set_author(name="Click me for the lyrics!", url=res['url'], icon_url=res['song_art_image_thumbnail_url'])
+            em.add_field(name="Artist", value=f"[{res['primary_artist']['name']}]({res['primary_artist']['url']})")
+            em.add_field(name="Verified?", value=res['primary_artist']['is_verified'])
+            em.set_image(url=res['header_image_url'])
+            await ctx.send(embed=em)
+        except IndexError:
+            await ctx.send(":x: There are no more songs or the song was not found.")
+
+    @commands.command()
+    async def artist(self, ctx, *, artist):
+        """Get information on a musical artist."""
+        try:
+            r = requests.get('https://api.genius.com/search?q=' + artist, headers={"Authorization": config['genius-token']})
+            j = r.json()
+            try:
+                artistid = j['response']['hits'][0]['result']['primary_artist']['id']
+            except (KeyError, IndexError):
+                await ctx.send(":x: Whoops! I could not find that artist!")
+                return
+            ar = requests.get('https://api.genius.com/artists/' + str(artistid), headers={"Authorization": config['genius-token']})
+            aj = ar.json()
+            res = aj['response']['artist']
+            em = discord.Embed(description=f"[{res['name']}]({res['url']})",
+                               color=ctx.author.color)
+            em.add_field(name="Alternate Names", value=", ".join(res['alternate_names']) if len(res['alternate_names']) > 0 else "None", inline=False)
+            em.add_field(name="Followers", value=str(res['followers_count']))
+            em.add_field(name="Facebook", value=res['facebook_name'])
+            em.add_field(name="Instagram", value=res['instagram_name'])
+            em.add_field(name="Twitter", value=res['twitter_name'])
+            em.add_field(name="Verified?", value=res['is_verified'])
+            em.add_field(name="Artist ID", value=res['id'])
+            em.set_author(name="Click me to go to the artist page!", url=res['url'], icon_url=res['header_image_url'])
+            em.set_image(url=res['image_url'])
+            await ctx.send(embed=em)
+        except:
+            await ctx.send("```py\n{}\n```".format(traceback.format_exc()))
+
+    @commands.command()
+    async def jumbo(self, ctx, emote: str):
+        """Get a larger version of a custom emote."""
+        e = emote.split(':')
+        anim = False
+        if e[0] == '<a':
+            anim = True
+        suffix = ".png"
+        if anim is True:
+            suffix = ".gif"
+        url = f"https://cdn.discordapp.com/emojis/{e[2].replace('>', '')}{suffix}"
+        weeb.save_to_image(url=url, name=e[1] + suffix)
+        await ctx.send(file=discord.File(f'./images/{e[1]}{suffix}'))
+        os.remove(f'./images/{e[1]}{suffix}')
+
+    @commands.command(aliases=["color"])
+    async def colour(self, ctx, hexcode: str):
+        """Show a preview of a hex colour."""
+        colour = hexcode.replace('#', '')
+        for char in colour:
+            if char not in "abcdef0123456789":
+                await ctx.send(":x: T-that's not a valid hex code!")
+                return
+        if len(colour) != 6:
+            await ctx.send(":x: Hex codes are six characters long!")
+            return
+        c = discord.Color(int(colour, 16))
+        em = discord.Embed(color=c)
+        em.set_image(url='https://www.colorcombos.com/images/colors/' + colour + '.png')
+        em.set_author(name="Here is a preview of your colour.", icon_url=get_friendly_avatar(ctx.author))
         await ctx.send(embed=em)
 
     @commands.command()
@@ -377,3 +496,28 @@ class Info:
 
 def setup(bot):
     bot.add_cog(Info(bot))
+
+
+"""    @commands.group()
+    async def dbl(self, ctx, *, params: str):
+        \"""Get information from DBL (DiscordBotList) API.
+        Valid subcommands are: `prefix`, `lib`, `username`, and `discriminator`. By default, you must mention a bot.\"""
+        if ctx.invoked_subcommand is None:
+            botid = params.replace('<@!', '').replace('<@', '').replace('>', '')
+            try:
+                int(botid)
+            except:
+                await ctx.send(":x: That is not a valid mention or ID.")
+                return
+            url = f'https://discordbots.org/api/bots/{botid}'
+            r = requests.get(url)
+            result = r.json()
+            em = discord.Embed(color=ctx.author.color, description=result['shortdesc'])
+            em.add_field(name="Library",value=result['lib'])
+            em.add_field(name="Prefix",value=result['prefix'])
+            em.add_field(name='ID',value=result['id'])
+            em.add_field(name="Certified",value=result['certified'])
+            em.add_field(name='Upvotes',value=result['points'])
+            em.add_field(name='Shards', value='Not sharding' if len(result['shards']) == 0 else len(result['shards']))
+            em.add_field(name='Guilds',value='Not posting' if result['serverCount'] == -1 else result['serverCount'])
+"""

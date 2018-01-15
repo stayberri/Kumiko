@@ -1,4 +1,5 @@
 import json
+import traceback
 import requests
 import urllib
 
@@ -35,9 +36,9 @@ def request_image_as_png(type):
 
 
 def save_to_image(url, name):
-    o = AppURLopener()
-    d = o.open(url)
-    data = d.read()
+    opener = AppURLopener()
+    response = opener.open(url)
+    data = response.read()
     with open("./images/" + name, "wb") as img:
         img.write(data)
         img.close()

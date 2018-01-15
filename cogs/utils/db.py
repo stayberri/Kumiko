@@ -29,6 +29,21 @@ def check_disabled(guildid):
         return ""
 
 
+def get_vote_channel(guildid):
+    db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                         charset='utf8mb4')
+    cur = db.cursor()
+    cur.execute(f'SELECT guildid,votechannel FROM opts WHERE guildid = {guildid}')
+    results = cur.fetchall()
+    if results:
+        channel = None
+        for row in results:
+            channel = row[1]
+        db.close()
+        if channel:
+            return channel
+
+
 def get_description(userid):
     db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
                          charset='utf8mb4')

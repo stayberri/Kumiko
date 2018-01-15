@@ -28,7 +28,7 @@ class Options:
         if check_disabled(ctx.guild.id) != "":
             new_disabled = check_disabled(ctx.guild.id) + f"|{channel.id}"
         cur.execute(
-            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel) VALUES ({ctx.guild.id}, "{channel.id}", NULL, NULL, NULL, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE disabledchannels = "{new_disabled}"')
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, "{channel.id}", NULL, NULL, NULL, NULL, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE disabledchannels = "{new_disabled}"')
         db.commit()
         db.close()
         await ctx.send(f":ok_hand: Added **#{channel.name}** ({channel.id}) to the disabled channels for this guild.")
@@ -61,7 +61,7 @@ class Options:
                              charset='utf8mb4')
         cur = db.cursor()
         cur.execute(
-            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel) VALUES ({ctx.guild.id}, NULL, "{channel.id}", NULL, NULL, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE logchannel = "{channel.id}"')
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, NULL, "{channel.id}", NULL, NULL, NULL, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE logchannel = "{channel.id}"')
         db.commit()
         db.close()
         await ctx.send(f":ok_hand: Set the logging channel to **#{channel.name}** ({channel.id})")
@@ -74,7 +74,7 @@ class Options:
                              charset='utf8mb4')
         cur = db.cursor()
         cur.execute(
-            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, "{role.id}", NULL, NULL, NULL) ON DUPLICATE KEY UPDATE muterole = "{role.id}"')
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, "{role.id}", NULL, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE muterole = "{role.id}"')
         db.commit()
         db.close()
         await ctx.send(f":ok_hand: Set the mute role to **{role.name}** ({role.id})")
@@ -87,7 +87,7 @@ class Options:
                              charset='utf8mb4')
         cur = db.cursor()
         cur.execute(
-            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel) VALUES ({ctx.guild.id}, NULL, NULL, "{channel.id}", NULL, NULL, NULL) ON DUPLICATE KEY UPDATE modlogchannel = "{channel.id}"')
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, NULL, NULL, "{channel.id}", NULL, NULL, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE modlogchannel = "{channel.id}"')
         db.commit()
         db.close()
         await ctx.send(f":ok_hand: Set the mod log channel to **#{channel.name}** ({channel.id})")
@@ -100,14 +100,20 @@ class Options:
         db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
                              charset='utf8mb4')
         cur = db.cursor()
+        if message == 'reset':
+            val = "NULL"
+            msg = "\N{OK HAND SIGN} Reset the join message."
+        else:
+            val = f'"message"'
+            msg = "\N{OK HAND SIGN} Set this guild's join message."
+            if not get_welcome_channel(ctx.guild.id) or not self.bot.get_channel(
+                    int(get_welcome_channel(ctx.guild.id))):
+                msg += "\nNote: I couldn't find a set welcome channel in this guild. You should reset your welcome " \
+                       + "channel. Check the wiki if you need help. (<https://github.com/Desiiii/Kumiko/wiki>)"
         cur.execute(
-            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, NULL, "{message}", NULL, NULL) ON DUPLICATE KEY UPDATE joinmessage = "{message}"')
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, NULL, {val}, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE joinmessage = {val}')
         db.commit()
         db.close()
-        msg = "\N{OK HAND SIGN} Set this guild's join message."
-        if not get_welcome_channel(ctx.guild.id) or not self.bot.get_channel(int(get_welcome_channel(ctx.guild.id))):
-            msg += "\nNote: I couldn't find a set welcome channel in this guild. You should reset your welcome " \
-                   + "channel. Check the wiki if you need help. (<https://github.com/Desiiii/Kumiko/wiki>)"
         await ctx.send(msg)
 
     @commands.command()
@@ -118,14 +124,20 @@ class Options:
         db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
                              charset='utf8mb4')
         cur = db.cursor()
+        if 'reset' in message:
+            val = 'NULL'
+            msg = "\N{OK HAND SIGN} Reset the join message."
+        else:
+            val = f'"{message}"'
+            msg = "\N{OK HAND SIGN} Set this guild's join message."
+            if not get_welcome_channel(ctx.guild.id) or not self.bot.get_channel(
+                    int(get_welcome_channel(ctx.guild.id))):
+                msg += "\nNote: I couldn't find a set welcome channel in this guild. You should reset your welcome " \
+                       + "channel. Check the wiki if you need help. (<https://github.com/Desiiii/Kumiko/wiki>)"
         cur.execute(
-            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, NULL, NULL, "{message}", NULL) ON DUPLICATE KEY UPDATE leavemessage = "{message}"')
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, NULL, NULL, {val}, NULL, NULL, NULL) ON DUPLICATE KEY UPDATE leavemessage = {val}')
         db.commit()
         db.close()
-        msg = "\N{OK HAND SIGN} Set this guild's leave message."
-        if not get_welcome_channel(ctx.guild.id) or not self.bot.get_channel(int(get_welcome_channel(ctx.guild.id))):
-            msg += "\nNote: I couldn't find a set welcome channel in this guild. You should reset your welcome " \
-                   + "channel. Check the wiki if you need help. (<https://github.com/Desiiii/Kumiko/wiki>)"
         await ctx.send(msg)
 
     @commands.command(aliases=["welcomechannel", "welcomeset"])
@@ -136,7 +148,7 @@ class Options:
                              charset='utf8mb4')
         cur = db.cursor()
         cur.execute(
-            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, NULL, NULL, NULL, "{channel.id}") ON DUPLICATE KEY UPDATE welcomechannel = "{channel.id}"')
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, NULL, NULL, NULL, "{channel.id}", NULL) ON DUPLICATE KEY UPDATE welcomechannel = "{channel.id}"')
         db.commit()
         db.close()
         await ctx.send(f":ok_hand: Set the welcome channel to **#{channel.name}** ({channel.id})")
@@ -188,13 +200,16 @@ class Options:
             disabled = ", ".join([self.bot.get_channel(int(l)).mention for l in list])
         logchannel = "None"
         if get_log_channel(ctx.guild.id):
-            logchannel = self.bot.get_channel(int(get_log_channel(ctx.guild.id))).mention
+            chan = self.bot.get_channel(int(get_log_channel(ctx.guild.id)))
+            logchannel = chan.mention if chan is not None else "Channel was deleted."
         modlog = "None"
         if get_modlog_channel(ctx.guild.id):
-            modlog = self.bot.get_channel(int(get_modlog_channel(ctx.guild.id))).mention
+            chan = self.bot.get_channel(int(get_modlog_channel(ctx.guild.id)))
+            modlog = chan.mention if chan is not None else "Channel was deleted."
         welcome = "None"
         if get_welcome_channel(ctx.guild.id):
-            welcome = self.bot.get_channel(int(get_welcome_channel(ctx.guild.id))).mention
+            chan = self.bot.get_channel(int(get_welcome_channel(ctx.guild.id)))
+            welcome = chan.mention if chan is not None else "Channel was deleted."
         joinmsg = "None"
         if get_join_message(ctx.guild.id):
             joinmsg = get_join_message(ctx.guild.id)
@@ -205,6 +220,10 @@ class Options:
         if get_mute_role(ctx.guild.id):
             role = discord.utils.get(ctx.guild.roles, id=int(get_mute_role(ctx.guild.id)))
             muterole = role.name if role is not None else "Role was deleted"
+        votechannel = "None"
+        if get_vote_channel(ctx.guild.id):
+            chan = self.bot.get_channel(int(get_vote_channel(ctx.guild.id)))
+            votechannel = chan.mention if chan is not None else "Channel was deleted."
         await ctx.send(f"**{ctx.guild.name}**'s Options\n"
                        + f"**Disabled Channels:** {disabled}\n"
                        + f"**Logging Channel:** {logchannel}\n"
@@ -212,7 +231,31 @@ class Options:
                        + f"**Welcome Channel:** {welcome}\n"
                        + f"**Join Message:** {joinmsg}\n"
                        + f"**Leave Message:** {leavemsg}\n"
-                       + f"**Mute Role:** {muterole}")
+                       + f"**Mute Role:** {muterole}\n"
+                       + f"**Voting Channel:** {votechannel}")
+
+    @commands.command()
+    async def votechannel(self, ctx, *, channel: discord.TextChannel):
+        """Set this guild's voting channel."""
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
+        cur = db.cursor()
+        cur.execute(
+            f'INSERT INTO opts (guildid, disabledchannels, logchannel, modlogchannel, muterole, joinmessage, leavemessage, welcomechannel, votechannel) VALUES ({ctx.guild.id}, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "{channel.id}") ON DUPLICATE KEY UPDATE votechannel = "{channel.id}"')
+        db.commit()
+        db.close()
+        await ctx.send(f":ok_hand: Set the voting channel to **#{channel.name}** ({channel.id})")
+
+    @commands.command()
+    async def modifiers(self, ctx, *, msg = None):
+        """Either get a wiki link to show the list of all modifiers or evaluate a string while parsing the modifiers."""
+        if msg is None:
+            await ctx.send("Check this link for a list of modifiers: <https://github.com/Desiiii/Kumiko/wiki/Modifiers>")
+        else:
+            parsed = parse_modifiers(msg, ctx.author, ctx.guild)
+            await ctx.send("\N{OK HAND SIGN} Successfully parsed modifiers in your string using you as the user and "
+                           + "this guild as the guild.")
+            await ctx.send(parsed)
 
 
 def setup(bot):

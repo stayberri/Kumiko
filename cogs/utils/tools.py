@@ -16,7 +16,7 @@ def get_friendly_avatar(user, replace_webp=True):
     This is done by replacing the size on gifs so that they can animate and if replace_webp is True (True by Default)
     .webp images are replaced with .png"""
     url = user.avatar_url
-    url = url.replace("gif?size=1024", "gif")
+    url = url.replace("gif?size=1024", "gif?size=1024&.gif")
     if replace_webp is True:
         url = url.replace(".webp", ".png")
     return url
@@ -31,7 +31,7 @@ def get_embedded_help_for(command, ctx):
         c = ctx.bot.all_commands.get(command)
     sig = c.signature.split(' ')
     cmd = sig[0].replace('[', '').split('|')
-    usage = sig[1]
+    usage = c.signature.replace(sig[0], "")[1:]
     em = discord.Embed(color=ctx.author.color)
     em.set_author(name=f"Help for command {c.name}", icon_url=ctx.guild.me.avatar_url)
     em.add_field(name="Description", value=c.help, inline=False)
@@ -74,3 +74,22 @@ def titlecase(string):
     capital = string[0].upper()
     lower = string[1:].lower()
     return capital + lower
+
+
+def get_status_emoji(status, number):
+    if status == "online":
+        array = [
+                "💚",
+                "<:online:398856032392183819>"
+            ]
+    elif status == "idle":
+        array = [
+                "💛",
+                "<:idle:398856031360253962>"
+            ]
+    elif status == 'dnd':
+        array = [
+                "❤",
+                "<:dnd:398856030068670477>"
+            ]
+    return str(array[number])

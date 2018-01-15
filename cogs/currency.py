@@ -169,25 +169,53 @@ class Currency:
         db.close()
         await ctx.send(":tada: Set your description. Check it out on `{}profile`!".format(ctx.prefix))
 
-    @commands.command()
+    @commands.group(aliases=['top', 'leaderboard'])
     async def richest(self, ctx):
-        """Check the richest users."""
+        """Check the richest users.
+
+        You can also check `richest rep`"""
+        if ctx.invoked_subcommand is None:
+            db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                                 charset='utf8mb4')
+            cur = db.cursor()
+            cur.execute(f'SELECT userid,bal FROM profiles ORDER BY bal DESC LIMIT 15')
+            results = cur.fetchall()
+            msg = ""
+            for i in range(len(results)):
+                row = results[i]
+                user = self.bot.get_user(int(row[0]))
+                if user is None:
+                    user = row[0]
+                n = i + 1
+                if n < 10:
+                    n = f"0{i+1}"
+                msg += f":star: **{n} | {user}** - ${row[1]}\n"
+            em = discord.Embed(
+                title="Richest Users",
+                description=msg,
+                color=ctx.author.color
+            )
+            await ctx.send(embed=em)
+
+    @richest.command(name="rep")
+    async def _rep(self, ctx):
         db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
                              charset='utf8mb4')
         cur = db.cursor()
-        cur.execute(f'SELECT userid,bal FROM profiles ORDER BY bal DESC LIMIT 15')
+        cur.execute(f'SELECT userid,reps FROM profiles ORDER BY reps DESC LIMIT 15')
         results = cur.fetchall()
         msg = ""
         for i in range(len(results)):
             row = results[i]
             user = self.bot.get_user(int(row[0]))
-            if user is not None:
-                n = i + 1
-                if n < 10:
-                    n = f"0{i+1}"
-                msg += f":star: **{n} | {user}** - ${row[1]}\n"
+            if user is None:
+                user = row[0]
+            n = i + 1
+            if n < 10:
+                n = f"0{i+1}"
+            msg += f":star: **{n} | {user}** - {row[1]} points\n"
         em = discord.Embed(
-            title="Richest Users",
+            title="Richest Users in Reputation",
             description=msg,
             color=ctx.author.color
         )
@@ -301,6 +329,37 @@ class Currency:
         else:
             await ctx.send(f":sob: {random.choice(losemsgs).format(amount, colour, c)}")
             cur.execute(f'UPDATE profiles SET bal = bal - {amount} WHERE userid = {ctx.author.id}')
+        db.commit()
+        db.close()
+
+    @commands.command()
+    @commands.cooldown(rate=1, per=43200, type=commands.BucketType.user)
+    async def crime(self, ctx):
+        """Commit a crime! This has a larger chance of failing but has a lower ratelimit than daily with a higher payout.
+        Note: this command requires you to have a minimum balance of $300!"""
+        losses = [
+            "You took candy from a baby... and felt bad about it. You lost ${}.",
+            "You got caught by the FBI. Pay ${} to get out of jail",
+            "Your memes are terrible. You get ${} taken away because of it."
+        ]
+        wins = [
+            "You successfully robbed a bank for ${}.",
+            "You did the thing. Congratulations. You got ${}"
+        ]
+        n = random.randint(1, 5)
+        if get_balance(ctx.author.id) < 300:
+            await ctx.send(":x: You can't commit a crime without the $300 to fund it.")
+            return
+        db = pymysql.connect(config['db']['ip'], config['db']['user'], config['db']['password'], config['db']['name'],
+                             charset='utf8mb4')
+        cur = db.cursor()
+        money = random.randint(150, 300)
+        if n == 1:
+            await ctx.send(f":tada: {random.choice(wins).format(money)}")
+            cur.execute(f'UPDATE profiles SET bal = bal + {money} WHERE userid = {ctx.author.id}')
+        else:
+            cur.execute(f'UPDATE profiles SET bal = bal - {money} WHERE userid = {ctx.author.id}')
+            await ctx.send(f":sob: {random.choice(losses).format(money)}")
         db.commit()
         db.close()
 

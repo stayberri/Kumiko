@@ -23,6 +23,7 @@ class Owner():
         env = {
             'self': self,
             'bot': self.bot,
+            'client': self.bot,
             'ctx': ctx,
             'message': ctx.message,
             'guild': ctx.guild,
@@ -35,63 +36,40 @@ class Owner():
 
         stdout = io.StringIO()
 
-        toCompile = f'async def func():\n{textwrap.indent(code, "  ")}'
+        to_compile = f'async def func():\n{textwrap.indent(code, "  ")}'
 
         try:
-            exec(toCompile, env)
+            exec(to_compile, env)
         except Exception as e:
-            em = discord.Embed(description=f"Excecuted and errored: {e.__class__.__name__}: {e}",
-                               color=0xff0000)
-            em.set_author(name="Evaluated and errored",
-                          icon_url=ctx.message.author.avatar_url.replace("?size=1024", ""))
-            em.set_footer(text="Executed by: " + str(ctx.message.author))
-            em.set_thumbnail(
-                url='https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/480px-Red_x.svg.png')
-            em.add_field(name="Code", value=f"[See here.]({hastebin.post(code.encode('utf-8'))}.py)")
-            return await ctx.send(embed=em)
+            return await ctx.send(f"```py\n{e.__class__.__name__}: {e}```")
 
         func = env['func']
         try:
             with redirect_stdout(stdout):
                 ret = await func()
-        except Exception as e:
-            value = stdout.getvalue()
-            em = discord.Embed(description=f"Excecuted and errored: ```py\n{value}{traceback.format_exc()}```",
-                               color=0xff0000)
-            em.set_author(name="Evaluated and errored",
-                          icon_url=ctx.message.author.avatar_url.replace("?size=1024", ""))
-            em.set_footer(text="Executed by: " + str(ctx.message.author))
-            em.set_thumbnail(
-                url='https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/480px-Red_x.svg.png')
-            em.add_field(name="Code", value=f"[See here.]({hastebin.post(code.encode('utf-8'))}.py)")
-            await ctx.send(embed=em)
+        except Exception:
+            await ctx.send(f"```py\n{traceback.format_exc()}```")
         else:
             value = stdout.getvalue()
-            if ret is None or type(ret) is discord.Message:
+            if ret is None:
                 if value:
                     x = f"{value}"
                     self.last_result = value
                 else:
                     x = "Executed successfully with no objects returned."
             else:
-                x = f"Executed successfully and returned: {value}{ret}"
-                self.last_result = f"{value}{ret}"
-            em = discord.Embed(description=x, color=0x00ff00)
-            em.set_author(name="Evaluated with success",
-                          icon_url=ctx.message.author.avatar_url.replace("?size=1024", ""))
-            em.set_footer(text="Executed by: " + str(ctx.message.author))
-            em.set_thumbnail(url='http://www.iconsdb.com/icons/preview/green/checked-checkbox-xxl.png')
-            em.add_field(name="Code", value=f"[See here.]({hastebin.post(code.encode('utf-8'))}.py)")
-            await ctx.send(embed=em)
+                x = f"Executed successfully and returned: ```py\n{value}{ret}```"
+                self.last_result = ret
+            await ctx.send(x)
 
     @commands.command()
     @commands.check(is_dev)
     async def reload(self, ctx, *, extension: str):
         """Reload an extension (Bot Owner Only)"""
         try:
-            self.bot.unload_extension(extension)
-            self.bot.load_extension(extension)
-            await ctx.send(f":ok_hand: Reloaded module `{extension}`")
+            self.bot.unload_extension('cogs.' + extension)
+            self.bot.load_extension('cogs.' + extension)
+            await ctx.send(f":ok_hand: Reloaded /cogs/{extension}.py")
         except Exception as e:
             await ctx.send(f":sob: I-I'm sorry, I couldn't reload the `{extension}` module >w< "
                            + f"```py\n{traceback.format_exc()}```")
@@ -100,16 +78,16 @@ class Owner():
     @commands.check(is_dev)
     async def unload(self, ctx, *, extension: str):
         """Unload an extension (Bot Owner Only)"""
-        self.bot.unload_extension(extension)
-        await ctx.send(f":ok_hand: Unloaded module `{extension}`")
+        self.bot.unload_extension("cogs." + extension)
+        await ctx.send(f":ok_hand: Unloaded /cogs/{extension}.py")
 
     @commands.command()
     @commands.check(is_dev)
     async def load(self, ctx, *, extension: str):
         """Load an extension (Bot Owner Only)"""
         try:
-            self.bot.load_extension(extension)
-            await ctx.send(f":ok_hand: Loaded module `{extension}`")
+            self.bot.load_extension("cogs." + extension)
+            await ctx.send(f":ok_hand: Loaded /cogs/{extension}.py")
         except Exception as e:
             await ctx.send(f":sob: I-I'm sorry, I couldn't load the `{extension}` module >w< "
                            + f"```py\n{traceback.format_exc()}```")

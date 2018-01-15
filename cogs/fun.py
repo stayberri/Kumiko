@@ -7,6 +7,7 @@ import json
 from discord.ext import commands
 from .utils.db import *
 from .utils.tools import *
+from .utils import weeb
 
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -75,7 +76,7 @@ class Fun:
         Note that this does have a joke if the word "dick" is included. To avoid this, end the string with '--bypass'"""
         if 'dick' in string.lower():
             if not string.lower().endswith('--bypass'):
-                await ctx.send("\N{CROSS MARK} That is too small.")
+                await ctx.send("\N{CROSS MARK} That is too " + ("small" if 'lars' not in string.lower() else 'long'))
             else:
                 await ctx.send(
                     "\N{WHITE HEAVY CHECK MARK} That string is `{}` characters long (excluding the bypass)".format(
@@ -161,6 +162,68 @@ class Fun:
                     await ctx.send(":x: That's not right. The correct answer was `{}`".format(correct))
             else:
                 await ctx.send(":x: That's not right. The correct answer was `{}`".format(correct))
+
+    @commands.command()
+    async def reverse(self, ctx, *, message):
+        """Reverse a message that you give to me."""
+        r = message[::-1]
+        r = r.replace("@everyone", "no u").replace("@here", "no me")
+        await ctx.send(r)
+
+    @commands.command()
+    async def achievement(self, ctx, *, text: str):
+        """Generate a minecraft achievement."""
+        num = random.randint(1, 26)
+        weeb.save_to_image(url=f'https://www.minecraftskinstealer.com/achievement/a.php?i={num}&h=Achievement+Get%21&t={text.replace(" ", "+")}',
+                           name='achievement.png')
+        await ctx.send(file=discord.File('./images/achievement.png'))
+
+    @commands.command()
+    async def love(self, ctx, *members: discord.Member):
+        """Use some magic numbers to calculate the compatibility between two users.
+        If only one user is given, you will be used as the second."""
+        l = members
+        if len(members) > 2:
+            l = [members[0], members[1]]
+        if len(members) == 1:
+            l = [ctx.author, members[0]]
+        if len(members) == 0:
+            return await ctx.send(":x: You need to specify the two users or one to compare with yourself.")
+        if (l[0].id == l[1].id) and l[0].id != ctx.author.id:
+            sum = 101
+            msg = f"Be sure to tell {l[0].display_name} that they should love themself!"
+        elif (l[0].id == l[1].id) and l[0].id == ctx.author.id:
+            sum = 9001
+            msg = "You are a special creature and should love yourself <3"
+        else:
+            sum = (l[0].id + l[1].id) % 101
+            if sum == 0:
+                msg = "Horrible match."
+            elif 0 < sum < 21:
+                msg = "Kinda bad."
+            elif 20 < sum < 41:
+                msg = "Could be much better."
+            elif 40 < sum < 61:
+                msg = "Not bad, not bad at all."
+            elif 60 < sum < 81:
+                msg = "Pretty good if you ask me."
+            elif 80 < sum < 91:
+                msg = "Really, really good."
+            elif 90 < sum < 100:
+                msg = "As close to perfect as you can get!"
+            else:
+                msg = "Absolutely ideal and perfect!"
+            names = [l[0].display_name, l[1].display_name]
+            shipname = names[0][:int(len(names[0])/2)] + names[1][int(len(names[1])/2):]
+        em = discord.Embed(
+            title="Love Meter",
+            description=f"\N{TWO HEARTS} **{l[0].display_name}**\n\N{TWO HEARTS} **{l[1].display_name}**",
+            color=ctx.author.color)
+        em.add_field(name="Result", value=f"**{sum}%**\n`{msg}`", inline=False)
+        em.add_field(name="Shipname", value=shipname)
+        em.set_thumbnail(url="https://www.emojibase.com/resources/img/emojis/hangouts/1f49c.png")
+        await ctx.send(embed=em)
+
 
 
 def setup(bot):

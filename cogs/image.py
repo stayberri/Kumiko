@@ -81,5 +81,16 @@ class Image:
             url=weeb.request_image("nani")
         ))
 
+    @commands.command()
+    async def xkcd(self, ctx):
+        """Return a random xkcd comic."""
+        import random
+        num = random.randint(0, 1500)
+        js = requests.get(f'https://xkcd.com/{num}/info.0.json').json()
+        img = js['img']
+        title = js['title']
+        await ctx.send(embed=discord.Embed(title=title, color=ctx.author.color).set_image(url=img))
+        
+
 def setup(bot):
     bot.add_cog(Image(bot))
