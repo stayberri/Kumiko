@@ -1,4 +1,6 @@
-[![Discord Bots](https://discordbots.org/api/widget/status/315297886613012481.svg)](https://discordbots.org/bot/315297886613012481)[![Discord Bots](https://discordbots.org/api/widget/servers/315297886613012481.svg?noavatar=true)](https://discordbots.org/bot/315297886613012481)[![Discord Bots](https://discordbots.org/api/widget/upvotes/315297886613012481.svg?noavatar=true)](https://discordbots.org/bot/315297886613012481)[![Discord Bots](https://discordbots.org/api/widget/lib/315297886613012481.svg?noavatar=true)](https://discordbots.org/bot/315297886613012481)[![Discord Bots](https://discordbots.org/api/widget/owner/315297886613012481.svg?noavatar=true)](https://discordbots.org/bot/315297886613012481)
+# Notice
+Kumiko has been discontinued as of 20/05/2018. I have no plans of bringing her back. This repository is here as a look only archive of what it once was.
+
 # Kumiko
 ![](https://pre00.deviantart.net/234d/th/pre/i/2014/340/e/5/natsume_rin_vector_by_trafx99-d88v37v.png)
 Hello! My name is Kumiko, and I am a discord bot made by **Desiree#3658** in **Python** using the **discord.py** library. I am made in the
@@ -41,5 +43,3 @@ Desiree#3658 - Main developer.
 # Links
 [Discord.py](https://github.com/Rapptz/discord.py)
 <br>[Python 3.6](https://www.python.org/downloads/release/python-360/)</br>
-[DBL](https://discordbots.org/bot/315297886613012481)
-<br>Discord Bots (coming soon)
